@@ -1,34 +1,43 @@
-# Quickstart Guide
+# DVA Wizard v3.0 - Quick Start Guide
 
-This guide will walk you through installing, configuring, and running the Local Llama Chat application from scratch.
-
-## Table of Contents
-
-1. [Prerequisites](#prerequisites)
-2. [Step-by-Step Setup](#step-by-step-setup)
-3. [Running the Application](#running-the-application)
-4. [Troubleshooting](#troubleshooting)
-
----
+This guide will help you get the **DVA Wizard RAG System** running in under 10 minutes. This application consists of a React frontend, a Node.js RAG backend, ChromaDB for vector storage, and Ollama for local AI inference.
 
 ## Prerequisites
 
-Ensure you have the following software installed on your computer:
-
-### 1. Node.js (v18+)
-This application requires Node.js to run the React development server.
-- **Download:** [nodejs.org](https://nodejs.org/)
-- **Verify:** Open your terminal and run `node -v`. It should return a version number greater than 18.
-
-### 2. Ollama
-Ollama runs the AI models on your machine.
-- **Download:** [ollama.com/download](https://ollama.com/download)
-- **Verify:** Run `ollama --version` in your terminal.
+Ensure you have the following installed on your machine:
+- **Node.js** (v18 or higher)
+- **Docker** (for running ChromaDB)
+- **Ollama** (Download from [ollama.com](https://ollama.com))
 
 ---
 
-## Step-by-Step Setup
+## Step 1: Setup Ollama & Pull Models
 
-### Step 1: Install Project Dependencies
+1.  **Install Ollama** if you haven't already.
+2.  **Pull the required models.** You need one model for chat and one for embeddings (to understand the meaning of text).
 
-Navigate to the project folder in your terminal and install the required Node packages:
+    ```bash
+    # Chat Model
+    ollama pull llama3.1
+    
+    # Embedding Model (Crucial for RAG)
+    ollama pull nomic-embed-text
+    ```
+
+3.  **Start Ollama with CORS enabled.** This allows the browser to talk to Ollama.
+
+    **Mac/Linux:**
+    ```bash
+    OLLAMA_ORIGINS="*" ollama serve
+    ```
+
+    **Windows (PowerShell):**
+    ```powershell
+    $env:OLLAMA_ORIGINS="*"; ollama serve
+    ```
+
+---
+
+## Step 2: Start ChromaDB (Vector Database)
+
+We use Docker to run the vector database.

@@ -1,39 +1,18 @@
-# Local Llama Chat
+# DVA Wizard v3.0
 
-A modern, responsive React application that provides a clean chat interface for interacting with local Large Language Models (LLMs) via [Ollama](https://ollama.com/).
+A sophisticated Retrieval-Augmented Generation (RAG) application designed to assist with Australian Department of Veterans' Affairs (DVA) claims and legislation. It runs entirely locally, ensuring data privacy while providing accurate, source-cited answers.
 
-![App Screenshot](https://via.placeholder.com/800x400?text=Local+Llama+Chat+Interface)
+![DVA Wizard](https://img.shields.io/badge/React-18-blue) ![Ollama](https://img.shields.io/badge/Ollama-Local-green) ![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector-orange) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## ✨ Features
+## 🚀 Features
 
-- 🚀 **Local & Private**: Chat with AI models running entirely on your machine. No data leaves your computer.
-- 💬 **Modern UI**: Built with React, TypeScript, and Tailwind CSS v4.
-- 🎨 **Shadcn UI Components**: Clean, accessible, and customizable UI components.
-- 🤖 **Model Support**: Works with any Ollama model (default: `llama3.1`).
-- 📱 **Responsive Design**: Fully functional on desktop and mobile devices.
+- **Local LLM Inference**: Powered by Ollama (Llama 3.1, Qwen, etc.). No API keys required.
+- **RAG Pipeline**: Integrates ChromaDB for semantic search over DVA legislation (MRCA, VEA, SRCA).
+- **Source Citations**: Every answer includes direct links to the specific legislation or policy document used.
+- **Real-time Metrics**: Dashboard monitoring GPU, VRAM, and CPU usage.
+- **Model Selection**: Switch between different local models dynamically via the UI.
+- **Modern UI**: Built with React, TypeScript, Tailwind CSS v4, and Shadcn UI.
 
-## 🛠️ Tech Stack
+## 🏗️ Architecture
 
-- **Framework**: React 18 + TypeScript
-- **Styling**: Tailwind CSS v4
-- **UI Components**: Shadcn UI
-- **Icons**: Lucide React
-- **AI Runtime**: Ollama
-
-## 📋 Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-1.  **Node.js**: Version 18.0 or higher.
-    *   Check with `node -v`
-2.  **Ollama**: Download and install from [ollama.com](https://ollama.com/download).
-3.  **Ollama Model**: Pull the model you wish to use (e.g., `llama3.1`).
-    ```bash
-    ollama pull llama3.1
-    ```
-
-## 🚀 Quick Start
-
-For detailed setup instructions, including troubleshooting, please see our [Quickstart Guide](./quickstart.md).
-
-### 1. Install Dependencies
+The application is split into a **Frontend** (React) and a **Backend** (Node.js/Express).
