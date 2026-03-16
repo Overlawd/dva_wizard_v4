@@ -1,55 +1,27 @@
-export interface SystemMetrics {
-  gpu: number;
-  gpuTemp: number;
-  vram: number;
-  cpu: number;
-  memory: number;
-  disk: number;
-  network: number;
-  ollamaActive: boolean;
-  vramTotal: number;
-}
-
-export interface OllamaModel {
-  name: string;
-  modified_at: string;
-  size: number;
-}
-
-export interface ModelInfo {
-  name: string;
-  type: 'chat' | 'reasoning' | 'sql' | 'summarizer' | 'embedding';
-  status: 'active' | 'idle' | 'loading';
-}
-
-export interface Source {
-  id: string;
-  title: string;
-  url: string;
-  level: 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
-  sourceType: 'legislation' | 'clik' | 'dva' | 'support' | 'community';
-  snippet: string;
-}
-
 export interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  model?: string;
-  sources?: Source[];
+  citations?: Citation[];
 }
 
-export interface CommonQuestion {
+export interface Citation {
   id: string;
-  category: string;
-  question: string;
+  title: string;
+  source: string;
+  relevance: number;
 }
 
-export type TaskBoundStatus = 
-  | 'Normal'
-  | 'GPU-Bound'
-  | 'VRAM-Bound'
-  | 'CPU-Bound'
-  | 'Disk I/O-Bound'
-  | 'Network-Bound';
+export interface SystemMetrics {
+  cpu: number;
+  memory: number;
+  gpu: number;
+  vram: number;
+}
+
+export interface AppSettings {
+  model: string;
+  temperature: number;
+  maxTokens: number;
+}

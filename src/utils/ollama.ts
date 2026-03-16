@@ -1,78 +1,66 @@
 import { Message, OllamaModel } from '../types';
 
-const RAG_BACKEND_URL = 'http://localhost:3000';
+const OLLAMA_BASE_URL = 'http://localhost:11434';
 
 export const chatWithOllama = async (
   messages: Message[],
-  model: string = 'llama3.1',
-  onChunk: (chunk: string) => void,
-  onSources: (sources: any[]) => void,
-  onComplete: () => void,
-  onError: (error: string) => void
-) => {
+  model: string = 'llama3.1'
+): Promise<{ content: string; model: string }> => {
+  // Add system prompt for DVA context
+  const systemMessage: Message = {
+    id: 'system',
+    role: 'system',
+    content: 'You are DVA Wizard v3.0, an expert assistant for Australian Department of Veterans\' Affairs claims and legislation. You specialize in MRCA, DRCA, VEA, and related policies. Be concise, accurate, and empathetic. If you are unsure, state that clearly.',
+    timestamp: new Date(),
+  };
+
+  const apiMessages = [
+    { role: systemMessage.role, content: systemMessage.content },
+    ...messages.map(m => ({ role: m.role, content: m.content }))
+  ];
+
   try {
-    const response = await fetch(`${RAG_BACKEND_URL}/api/chat`, {
+    const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: model,
-        messages: messages,
+        messages: apiMessages,
+        stream: false, // Using non-streaming for simplicity
+        options: {
+          temperature: 0.7,
+          num_ctx: 8192,
+        },
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.details || errorData.error || `Backend error: ${response.status}`);
+      throw new Error(errorData.error || `Ollama API error: ${response.status}`);
     }
 
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-
-    if (!reader) throw new Error('No response body');
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.replace('data: ', '');
-          try {
-            const parsed = JSON.parse(data);
-            
-            if (parsed.type === 'sources') {
-              onSources(parsed.sources);
-            } else if (parsed.type === 'content') {
-              onChunk(parsed.content);
-            } else if (parsed.type === 'done') {
-              onComplete();
-            } else if (parsed.type === 'error') {
-              onError(parsed.error);
-            }
-          } catch (e) {
-            console.warn('Failed to parse SSE data', e);
-          }
-        }
-      }
-    }
+    const data = await response.json();
+    
+    return {
+      content: data.message.content,
+      model: data.model,
+    };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    onError(errorMessage);
+    console.error('Ollama API Error:', error);
+    throw error;
   }
 };
-
-// Keep existing non-streaming helpers for other endpoints
-const OLLAMA_BASE_URL = 'http://localhost:11434';
 
 export const listModels = async (): Promise<OllamaModel[]> => {
   try {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/tags`);
-    if (!response.ok) throw new Error(`Failed to fetch models: ${response.status}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.status}`);
+    }
+
     const data = await response.json();
     return data.models || [];
   } catch (error) {

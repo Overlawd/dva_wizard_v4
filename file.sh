@@ -1,14 +1,16 @@
-    OLLAMA_ORIGINS="*" ollama serve
+    cd dva-wizard
     ```
-*   **Windows (PowerShell):**
-    ```powershell
-    $env:OLLAMA_ORIGINS="*"; ollama serve
+    *(If you don't remember the folder name, run `dir` to see the list of folders).*
+
+2.  **Run the dev server.**
+    ```bash
+    npm run dev
     ```
 
 ---
 
-### Part 2: Update Code for "Offline Mode"
+### If you don't have a `package.json` yet
 
-To prevent the app from looking broken when Ollama is offline, I will update the utility to return a "Mock" model so you can still see the UI, and improve the error handling in the Chat Interface.
+If you haven't set up the project dependencies, you need to create a `package.json` file in your project folder first.
 
-**Update `src/utils/ollama.ts`:**
+Here is the complete `package.json` for this project. Create a file named `package.json` in your project root and paste this content:
