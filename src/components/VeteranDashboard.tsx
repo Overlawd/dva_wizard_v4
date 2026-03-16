@@ -3,10 +3,15 @@ import { ChatInterface } from './ChatInterface';
 import { Questionnaire } from './Questionnaire';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { User, FileText, History } from 'lucide-react';
+import { User, FileText, History, LogOut } from 'lucide-react';
 import { User as UserType } from '../types/auth';
 
-export function VeteranDashboard({ user }: { user: UserType }) {
+interface VeteranDashboardProps {
+  user: UserType;
+  onLogout: () => void;
+}
+
+export function VeteranDashboard({ user, onLogout }: VeteranDashboardProps) {
   const [view, setView] = useState<'chat' | 'questionnaire' | 'saved'>('chat');
   const [questionnaireComplete, setQuestionnaireComplete] = useState(false);
 
@@ -46,9 +51,19 @@ export function VeteranDashboard({ user }: { user: UserType }) {
           </Button>
         </nav>
 
-        <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
-          <p className="text-xs text-blue-800 font-medium">Source Emphasis</p>
-          <p className="text-xs text-blue-600 mt-1">DVA.gov.au, CLIK, Reddit</p>
+        <div className="space-y-2">
+          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <p className="text-xs text-blue-800 font-medium">Source Emphasis</p>
+            <p className="text-xs text-blue-600 mt-1">DVA.gov.au, CLIK, Reddit</p>
+          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600 hover:bg-red-50"
+            onClick={onLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
         </div>
       </div>
 

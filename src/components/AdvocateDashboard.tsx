@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { ChatInterface } from './ChatInterface';
 import { Button } from './ui/button';
-import { MessageSquare, Database, FileText } from 'lucide-react';
+import { MessageSquare, Database, FileText, LogOut } from 'lucide-react';
 import { User as UserType } from '../types/auth';
 
-export function AdvocateDashboard({ user }: { user: UserType }) {
+interface AdvocateDashboardProps {
+  user: UserType;
+  onLogout: () => void;
+}
+
+export function AdvocateDashboard({ user, onLogout }: AdvocateDashboardProps) {
   const [view, setView] = useState<'chat' | 'cases'>('chat');
 
   return (
@@ -35,9 +40,19 @@ export function AdvocateDashboard({ user }: { user: UserType }) {
           </Button>
         </nav>
         
-        <div className="text-xs text-slate-400 mt-auto">
-          Access: Standard Corpus<br/>
-          No Admin Tools
+        <div className="space-y-2">
+          <div className="text-xs text-slate-400">
+            Access: Standard Corpus<br/>
+            No Admin Tools
+          </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600 hover:bg-red-50"
+            onClick={onLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
         </div>
       </div>
 

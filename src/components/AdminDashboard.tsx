@@ -5,12 +5,17 @@ import { ScrapingMenu } from './ScrapingMenu';
 import { CurationWorkflow } from './CurationWorkflow';
 import { Settings } from './Settings';
 import { Button } from './ui/button';
-import { LayoutDashboard, Globe, Shield, Settings as SettingsIcon, List, Database } from 'lucide-react';
+import { LayoutDashboard, Globe, Shield, Settings as SettingsIcon, List, Database, LogOut } from 'lucide-react';
 import { User as UserType } from '../types/auth';
 
 type AdminView = 'overview' | 'chat' | 'scraping' | 'curation' | 'settings' | 'seeds';
 
-export function AdminDashboard({ user }: { user: UserType }) {
+interface AdminDashboardProps {
+  user: UserType;
+  onLogout: () => void;
+}
+
+export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [view, setView] = useState<AdminView>('overview');
 
   return (
@@ -75,6 +80,17 @@ export function AdminDashboard({ user }: { user: UserType }) {
             Settings
           </Button>
         </nav>
+
+        <div className="p-4 border-t border-slate-800">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-slate-800"
+            onClick={onLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -99,7 +115,6 @@ export function AdminDashboard({ user }: { user: UserType }) {
             <div className="bg-white p-6 rounded-lg border border-slate-200">
               <h3 className="text-xl font-bold mb-4">Seed URL Management</h3>
               <p className="text-slate-500">View/Add/Remove seeds and promote trust levels.</p>
-              {/* Placeholder for Seed List Table */}
               <div className="mt-4 border border-dashed border-slate-300 rounded-lg p-8 text-center">
                 Seed list table would go here.
               </div>

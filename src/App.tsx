@@ -23,11 +23,11 @@ function App() {
   // Route based on role
   switch (user.role) {
     case 'admin':
-      return <AdminDashboard user={user} />;
+      return <AdminDashboard user={user} onLogout={handleLogout} />;
     case 'veteran':
-      return <VeteranDashboard user={user} />;
+      return <VeteranDashboard user={user} onLogout={handleLogout} />;
     case 'advocate':
-      return <AdvocateDashboard user={user} />;
+      return <AdvocateDashboard user={user} onLogout={handleLogout} />;
     default:
       return <Login onLogin={handleLogin} />;
   }
