@@ -1,43 +1,48 @@
-# Local Llama Chat
+# DVA Wizard
 
-A modern, responsive React application that provides a sleek chat interface for interacting with local Large Language Models (LLMs) via [Ollama](https://ollama.com/). This application runs entirely in your browser and connects to your local AI instance, ensuring complete privacy and data control.
+A modern, interactive React application built with Vite, TypeScript, and Tailwind CSS. This project utilizes Shadcn UI components for a polished, professional interface.
 
-![App Screenshot](https://via.placeholder.com/800x400?text=Local+Llama+Chat+Interface)
+## 🚀 Tech Stack
 
-## ✨ Features
-
-- 🚀 **100% Local & Private**: Chat with AI models running entirely on your hardware. No API keys, no cloud fees, no data leaves your computer.
-- 💬 **Modern Chat UI**: A clean, intuitive interface designed for conversation, featuring distinct user and assistant bubbles.
-- 🎨 **Beautiful Design**: Built with Tailwind CSS v4 and customized Shadcn UI components for a polished look.
-- 🤖 **Model Agnostic**: Compatible with any model hosted on Ollama (Llama 3, Mistral, Gemma, Phi, etc.).
-- 📱 **Responsive**: Fully functional layout that adapts to desktops, tablets, and mobile screens.
-- ⚡ **Type-Safe**: Built with TypeScript for robust code quality and developer experience.
-
-## 🛠️ Tech Stack
-
-- **Framework**: React 18 with Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **UI Library**: Shadcn UI (Radix UI primitives)
-- **Icons**: Lucide React
-- **AI Runtime**: Ollama (Local Inference)
+- **Framework:** React 18 with TypeScript
+- **Build Tool:** Vite
+- **Styling:** Tailwind CSS v4
+- **UI Components:** Shadcn UI (Radix UI primitives)
+- **Icons:** Lucide React
+- **Animations:** Framer Motion
+- **Charts:** Recharts
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have the following installed on your system:
+Before you begin, ensure you have the following installed:
+- **Node.js** (v18 or higher)
+- **npm** (comes with Node.js)
 
-1.  **Node.js**: Version 18.17 or higher (required for Vite).
-    *   [Download here](https://nodejs.org/)
-    *   Verify installation: `node -v`
-2.  **Ollama**: The local LLM runner.
-    *   [Download here](https://ollama.com/download)
-    *   Verify installation: `ollama --version`
-3.  **Git**: Recommended for cloning (optional).
+## 🛠️ Installation
 
-## 🚀 Quick Start
+1. **Install standard dependencies:**
+   ```bash
+   npm install
+   ```
 
-For a detailed, step-by-step guide on setting up your environment, configuring Ollama, and troubleshooting, please read the **[Quickstart Guide](./quickstart.md)**.
+2. **Install Shadcn UI dependencies:**
+   Since this project uses Shadcn UI components manually, you must install the required Radix UI primitives and utility libraries:
+   ```bash
+   npm install @radix-ui/react-slot @radix-ui/react-label @radix-ui/react-select @radix-ui/react-avatar class-variance-authority clsx tailwind-merge
+   ```
 
-### 1. Project Setup
+3. **Verify UI Components:**
+   Ensure the following files exist in your `src/components/ui/` directory. These are pre-configured for this project:
+   - `button.tsx`
+   - `card.tsx`
+   - `input.tsx`
+   - `textarea.tsx`
+   - `label.tsx`
+   - `avatar.tsx`
+   - `select.tsx`
 
-If you haven't already, initialize the project and install dependencies:
+   *Note: If these files are missing, the application will fail to build.*
+
+## 🏃 Running the Application
+
+Start the development server:
