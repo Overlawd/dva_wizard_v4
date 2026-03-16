@@ -1,1 +1,1 @@
-$env:OLLAMA_ORIGINS="*"; ollama serve
+npm run dev
