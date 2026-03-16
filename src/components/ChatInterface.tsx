@@ -1,21 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, FileText } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Textarea } from '../components/ui/textarea';
+import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
-import { Message } from '../types';
-import { generateMockResponse } from '../utils/mockData';
+import { Send, ScrollText, User, Bot, CheckCircle, AlertCircle } from 'lucide-react';
+import { ChatMessage, Source } from '../types';
+import { mockSources, initialMessages } from '../utils/mockData';
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: 'Welcome to DVA Wizard. I can help you navigate MRCA, VEA, and SRCA legislation. How can I assist you today?',
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -31,102 +24,141 @@ export function ChatInterface() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = {
+    const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
       content: input,
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
-    try {
-      const response = await generateMockResponse(input);
-      setMessages((prev) => [...prev, response]);
-    } catch (error) {
-      console.error('Error generating response:', error);
-    } finally {
+    // Simulate processing delay
+    setTimeout(() => {
+      // Determine if statement or question (mock logic)
+      const isStatement = !input.includes('?');
+      
+      if (isStatement) {
+        const statementResponse: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `I've noted that "${input}". I'll keep this in mind to provide personalized advice. How can I help you with your claim today?`,
+          timestamp: new Date(),
+          isStatement: true
+        };
+        setMessages(prev => [...prev, statementResponse]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Mock Question Response
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Based on your query regarding "${input}", here is the relevant information:\n\nUnder the MRCA (Military Rehabilitation and Compensation Act 2004), which is the primary Act for new claims, you may be eligible for compensation if the condition can be related to your service. The standard of proof differs depending on whether your service was warlike or non-warlike.\n\nI recommend reviewing the specific Statement of Principles for your condition to determine the causal factors required.`,
+        timestamp: new Date(),
+        sources: mockSources
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
       setIsLoading(false);
-    }
+    }, 1500);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const getLevelColor = (level: string) => {
+    switch(level) {
+      case 'L1': return 'bg-red-100 text-red-800 border-red-200';
+      case 'L2': return 'bg-green-100 text-green-800 border-green-200';
+      case 'L3': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-slate-100 text-slate-800 border-slate-200';
     }
   };
 
   return (
     <div className="flex flex-col h-screen bg-slate-50">
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            {message.role === 'assistant' && (
-              <Avatar className="bg-blue-600 h-10 w-10 mt-1">
-                <AvatarFallback className="text-white">
-                  <Bot className="w-5 h-5" />
-                </AvatarFallback>
-              </Avatar>
-            )}
-            <div className={`max-w-2xl ${message.role === 'user' ? 'order-2' : ''}`}>
-              <div
-                className={`rounded-2xl px-6 py-4 ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-slate-200 text-slate-800 shadow-sm'
-                }`}
-              >
-                <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
-              </div>
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-600 text-white p-2 rounded-lg">
+            <ScrollText className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="font-bold text-slate-800">DVA Wizard</h1>
+            <p className="text-xs text-slate-500">MRCA Primacy Active • 5,420 Sources Indexed</p>
+          </div>
+        </div>
+      </div>
 
-              {message.citations && message.citations.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Sources
-                  </p>
-                  {message.citations.map((citation) => (
-                    <Card key={citation.id} className="bg-white border-slate-200 hover:border-blue-300 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
-                          <div>
-                            <h4 className="font-medium text-sm text-slate-900">{citation.title}</h4>
-                            <p className="text-xs text-slate-500 mt-1">{citation.source}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-            {message.role === 'user' && (
-              <Avatar className="bg-slate-700 h-10 w-10 mt-1">
-                <AvatarFallback className="text-white">
-                  <User className="w-5 h-5" />
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex gap-3 max-w-3xl ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              <Avatar className={msg.role === 'user' ? 'bg-blue-600' : 'bg-slate-700'}>
+                <AvatarFallback>
+                  {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                 </AvatarFallback>
               </Avatar>
-            )}
+              
+              <div className={`space-y-2 ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
+                <div className={`rounded-2xl px-4 py-3 ${
+                  msg.role === 'user' 
+                    ? 'bg-blue-600 text-white rounded-tr-sm' 
+                    : 'bg-white text-slate-800 border border-slate-200 rounded-tl-sm shadow-sm'
+                }`}>
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                </div>
+
+                {/* Sources */}
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="space-y-2 w-full">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Sources</p>
+                    {msg.sources.map((source) => (
+                      <Card key={source.id} className="border-slate-200 bg-white shadow-sm">
+                        <CardContent className="p-3">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-bold px-2 py-0.5 rounded border ${getLevelColor(source.level)}`}>
+                                {source.level}
+                              </span>
+                              <h4 className="text-sm font-semibold text-slate-800 line-clamp-1">{source.title}</h4>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-slate-500">
+                              {source.level === 'L1' || source.level === 'L2' ? (
+                                <CheckCircle className="h-3 w-3 text-green-600" />
+                              ) : (
+                                <AlertCircle className="h-3 w-3 text-amber-500" />
+                              )}
+                              {source.trustScore}
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-600 line-clamp-2 mb-2">{source.snippet}</p>
+                          <a href={source.url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline truncate block">
+                            {source.url}
+                          </a>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         ))}
         {isLoading && (
-          <div className="flex gap-4">
-            <Avatar className="bg-blue-600 h-10 w-10">
-              <AvatarFallback className="text-white">
-                <Bot className="w-5 h-5" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="bg-white border border-slate-200 rounded-2xl px-6 py-4 shadow-sm">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100" />
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200" />
+          <div className="flex justify-start">
+            <div className="flex gap-3">
+              <Avatar className="bg-slate-700">
+                <AvatarFallback><Bot className="h-4 w-4" /></AvatarFallback>
+              </Avatar>
+              <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
               </div>
             </div>
           </div>
@@ -134,26 +166,28 @@ export function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-slate-200 bg-white p-6">
-        <div className="max-w-4xl mx-auto flex gap-4">
-          <Textarea
-            placeholder="Ask about DVA claims, MRCA, or VEA legislation..."
+      {/* Input Area */}
+      <div className="bg-white border-t border-slate-200 p-4">
+        <div className="max-w-3xl mx-auto flex gap-2">
+          <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="min-h-[60px] resize-none border-slate-300 focus:ring-blue-500"
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Ask about MRCA, DRCA, claims, or mental health support..."
+            className="flex-1 bg-slate-50 border-slate-300 focus-visible:ring-blue-500"
+            disabled={isLoading}
           />
-          <Button
-            onClick={handleSend}
+          <Button 
+            onClick={handleSend} 
             disabled={isLoading || !input.trim()}
-            className="bg-blue-600 hover:bg-blue-700 h-[60px] w-[60px] p-0"
+            className="bg-blue-600 hover:bg-blue-700"
           >
-            <Send className="w-5 h-5" />
+            <Send className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-center text-xs text-slate-400 mt-3">
-          DVA Wizard runs locally. Responses are generated by Ollama.
-        </p>
+        <div className="text-center mt-2">
+          <p className="text-xs text-slate-400">AI can make mistakes. Verify important information with official DVA sources.</p>
+        </div>
       </div>
     </div>
   );
