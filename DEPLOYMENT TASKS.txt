@@ -1,0 +1,226 @@
+CURRENT SIMULATION LIST:
+
+Based on the architecture of the frontend application, here is the exact list of functions and features that are currently simulated (mocked) for demonstration purposes.
+
+1. Authentication System
+Simulated Feature: User Login
+How it works: The login form accepts any input (or specific demo credentials) and simulates a network request. It then generates a fake JWT token and stores it in the browser's localStorage.
+Real Behavior Required: Verification against a secure user database (e.g., PostgreSQL, MongoDB) and issuance of a cryptographically signed JWT.
+2. AI Chatbot (LLM Integration)
+Simulated Feature: Intelligent Responses
+How it works: When you send a message, the app uses a setTimeout to mimic network latency and returns a pre-written, static response string. It does not "think" or process the natural language.
+Real Behavior Required: Sending the prompt to an LLM API (e.g., OpenAI GPT-4, Anthropic Claude) and streaming back the generated text.
+3. Retrieval-Augmented Generation (RAG)
+Simulated Feature: Source Citations
+How it works: The "Sources" listed below the chat answers (e.g., "DVA Hearing Loss Guide") are hardcoded mock objects. The app is not actually searching a database or vector store to find relevant documents.
+Real Behavior Required: Embedding the user query, performing a vector similarity search in a database (e.g., Pinecone, Weaviate), and retrieving actual relevant document chunks.
+4. Response Curation (Feedback Loop)
+Simulated Feature: Accept/Deny Buttons
+How it works: Clicking "Accept" or "Deny" updates the UI state locally (e.g., changing the icon color) to show the action happened. No data is sent to a server, and the AI model is not actually retrained or adjusted.
+Real Behavior Required: Sending feedback data to the backend to update the vector database metadata or trigger a fine-tuning/re-ranking process.
+5. Admin Tools: Web Scraping
+Simulated Feature: URL Scraper
+How it works: Clicking "Scrape" in the admin panel triggers a fake progress bar or loading spinner, followed by a "Success" toast notification. It does not actually visit the URL or parse HTML.
+Real Behavior Required: A background worker (e.g., using Puppeteer or BeautifulSoup) to crawl the URL, extract text, chunk it, embed it, and store it in the vector database.
+6. Admin Tools: Query Management
+Simulated Feature: Delete Query
+How it works: Deleting a query removes it from the visible list in the React state. If you refresh the page, the query will reappear because it was not deleted from a persistent database.
+Real Behavior Required: Sending a DELETE request to the API to permanently remove the record from the database.
+7. Veteran Services: Questionnaire
+Simulated Feature: Eligibility Calculation
+How it works: Submitting the benefits questionnaire returns a hardcoded result (e.g., "30% Disability Rating") regardless of the specific answers you selected.
+Real Behavior Required: A rules engine or logic service that analyzes the specific form inputs against current DVA legislation to determine actual eligibility.
+8. Trust Level Scoring
+Simulated Feature: Confidence Percentage
+How it works: The "Trust Level" (e.g., 95%) displayed on responses is a static or randomly generated number. It does not reflect the actual semantic similarity or confidence of the retrieval system.
+Real Behavior Required: Calculating a score based on the distance metric of the vector search results.
+
+
+
+NEXT STEPS FOR BACKEND:
+
+Backend Implementation Specification & API Contract
+Project: DVA Wizard Frontend Integration Version: 1.0 Status: Ready for Backend Development
+
+1. Overview
+This document outlines the API contract required to transform the current frontend application into a fully functional production system. The frontend is currently configured to make real HTTP requests to a backend server. For the application to function, the backend must implement the endpoints and data structures defined below.
+
+Base URL: Configured via REACT_APP_API_URL (default: http://localhost:3000/api)
+
+2. General Requirements
+2.1 Authentication
+Mechanism: JWT (JSON Web Tokens) via Bearer Authentication.
+Header: Authorization: Bearer <token>
+Token Storage: The frontend stores tokens in localStorage under the key auth_token.
+2.2 Response Format
+All successful responses should return JSON.
+
+Success Status: 200 OK, 201 Created
+Error Status: 400 Bad Request, 401 Unauthorized, 500 Internal Server Error
+Error Body:
+json
+
+
+{
+  "message": "Human readable error description"
+}
+2.3 CORS
+The backend must enable CORS for the frontend origin (e.g., http://localhost:5173 or http://localhost:3000).
+
+3. Module: Authentication
+3.1 Login
+Validates user credentials and returns an authentication token.
+
+Endpoint: POST /auth/login
+Request Body:
+json
+
+
+{
+  "username": "string",
+  "password": "string"
+}
+Response (200 OK):
+json
+
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "string",
+  "user": {
+    "id": "uuid",
+    "name": "string",
+    "role": "admin" | "veteran" | "advocate",
+    "serviceNumber": "string (optional)"
+  }
+}
+4. Module: Chat & AI Core
+4.1 Send Message
+Processes a user prompt, retrieves relevant context (RAG), queries the LLM, and returns a formatted response.
+
+Endpoint: POST /chat/completions
+Headers: Authorization: Bearer <token>
+Request Body:
+json
+
+
+{
+  "message": "What are the entitlements for hearing loss?",
+  "conversationId": "uuid (optional)",
+  "roleContext": "veteran" | "advocate" | "admin"
+}
+Response (200 OK):
+json
+
+
+{
+  "id": "uuid",
+  "content": "Based on DVA policy...",
+  "sources": [
+    {
+      "title": "DVA Hearing Loss Guide",
+      "url": "https://dva.gov.au/guide...",
+      "snippet": "Hearing loss is rated under Table 20.1..."
+    }
+  ],
+  "trustLevel": 0.95,
+  "subtype": "entitlement_query"
+}
+5. Module: Curation & Feedback
+5.1 Curate Response
+Allows users (Admins, Veterans, Advocates) to flag AI responses as helpful or incorrect. This endpoint should update the vector database or feedback loop.
+
+Endpoint: POST /responses/{responseId}/curate
+Headers: Authorization: Bearer <token>
+Request Body:
+json
+
+
+{
+  "action": "accept" | "deny",
+  "actorRole": "admin" | "veteran" | "advocate"
+}
+Response (200 OK):
+json
+
+
+{
+  "success": true,
+  "newTrustLevel": 0.96,
+  "message": "Feedback recorded successfully"
+}
+6. Module: Admin Tools
+6.1 Trigger Web Scrape
+Initiates a background job to scrape a specific URL and ingest its content into the Knowledge Base.
+
+Endpoint: POST /admin/scrape
+Headers: Authorization: Bearer <token> (Role: Admin)
+Request Body:
+json
+
+
+{
+  "url": "https://legislation.gov.au/..."
+}
+Response (200 OK):
+json
+
+
+{
+  "success": true,
+  "jobId": "job_123456"
+}
+6.2 Delete Query
+Removes a specific query/response pair from the database (admin moderation).
+
+Endpoint: DELETE /admin/queries/{queryId}
+Headers: Authorization: Bearer <token> (Role: Admin)
+Response (200 OK):
+json
+
+
+{
+  "success": true
+}
+7. Module: Veteran Services
+7.1 Submit Questionnaire
+Processes a submitted benefits questionnaire and calculates potential entitlements.
+
+Endpoint: POST /veteran/questionnaire/submit
+Headers: Authorization: Bearer <token> (Role: Veteran)
+Request Body:
+json
+
+
+{
+  "answers": {
+    "serviceBranch": "Army",
+    "yearsOfService": 5,
+    "hasDisability": true,
+    "disabilityType": ["Tinnitus", "Hearing Loss"]
+  }
+}
+Response (200 OK):
+json
+
+
+{
+  "id": "submission_uuid",
+  "status": "completed",
+  "entitlementResult": {
+    "eligibleBenefits": ["Disability Pension", "Health Care Card"],
+    "estimatedRating": "30%"
+  }
+}
+8. Data Models (TypeScript Interfaces)
+For reference, here are the exact interfaces the frontend expects.
+
+file.tsx
+9. Implementation Checklist for Backend Team
+ Auth System: Implement JWT generation and validation.
+ Database: Setup tables/collections for Users, Conversations, Messages, and Sources.
+ RAG Pipeline: Integrate Vector Database (e.g., Pinecone, Weaviate) and LLM (e.g., OpenAI).
+ Scraper: Implement the /admin/scrape endpoint to run async jobs.
+ Curation Logic: Implement logic to adjust trustLevel based on user feedback.
+ Questionnaire Engine: Implement logic to parse answers and return entitlementResult.
+ CORS: Ensure the API allows requests from the frontend domain.

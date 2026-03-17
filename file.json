@@ -1,0 +1,168 @@
+    {
+      "message": "Human readable error description"
+    }
+    ```
+
+### 2.3 CORS
+The backend must enable CORS for the frontend origin (e.g., `http://localhost:5173` or `http://localhost:3000`).
+
+---
+
+## 3. Module: Authentication
+
+### 3.1 Login
+Validates user credentials and returns an authentication token.
+
+*   **Endpoint:** `POST /auth/login`
+*   **Request Body:**
+    ```json
+    {
+      "username": "string",
+      "password": "string"
+    }
+    ```
+*   **Response (200 OK):**
+    ```json
+    {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "refreshToken": "string",
+      "user": {
+        "id": "uuid",
+        "name": "string",
+        "role": "admin" | "veteran" | "advocate",
+        "serviceNumber": "string (optional)"
+      }
+    }
+    ```
+
+---
+
+## 4. Module: Chat & AI Core
+
+### 4.1 Send Message
+Processes a user prompt, retrieves relevant context (RAG), queries the LLM, and returns a formatted response.
+
+*   **Endpoint:** `POST /chat/completions`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Request Body:**
+    ```json
+    {
+      "message": "What are the entitlements for hearing loss?",
+      "conversationId": "uuid (optional)",
+      "roleContext": "veteran" | "advocate" | "admin"
+    }
+    ```
+*   **Response (200 OK):**
+    ```json
+    {
+      "id": "uuid",
+      "content": "Based on DVA policy...",
+      "sources": [
+        {
+          "title": "DVA Hearing Loss Guide",
+          "url": "https://dva.gov.au/guide...",
+          "snippet": "Hearing loss is rated under Table 20.1..."
+        }
+      ],
+      "trustLevel": 0.95,
+      "subtype": "entitlement_query"
+    }
+    ```
+
+---
+
+## 5. Module: Curation & Feedback
+
+### 5.1 Curate Response
+Allows users (Admins, Veterans, Advocates) to flag AI responses as helpful or incorrect. This endpoint should update the vector database or feedback loop.
+
+*   **Endpoint:** `POST /responses/{responseId}/curate`
+*   **Headers:** `Authorization: Bearer <token>`
+*   **Request Body:**
+    ```json
+    {
+      "action": "accept" | "deny",
+      "actorRole": "admin" | "veteran" | "advocate"
+    }
+    ```
+*   **Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "newTrustLevel": 0.96,
+      "message": "Feedback recorded successfully"
+    }
+    ```
+
+---
+
+## 6. Module: Admin Tools
+
+### 6.1 Trigger Web Scrape
+Initiates a background job to scrape a specific URL and ingest its content into the Knowledge Base.
+
+*   **Endpoint:** `POST /admin/scrape`
+*   **Headers:** `Authorization: Bearer <token>` (Role: Admin)
+*   **Request Body:**
+    ```json
+    {
+      "url": "https://legislation.gov.au/..."
+    }
+    ```
+*   **Response (200 OK):**
+    ```json
+    {
+      "success": true,
+      "jobId": "job_123456"
+    }
+    ```
+
+### 6.2 Delete Query
+Removes a specific query/response pair from the database (admin moderation).
+
+*   **Endpoint:** `DELETE /admin/queries/{queryId}`
+*   **Headers:** `Authorization: Bearer <token>` (Role: Admin)
+*   **Response (200 OK):**
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+---
+
+## 7. Module: Veteran Services
+
+### 7.1 Submit Questionnaire
+Processes a submitted benefits questionnaire and calculates potential entitlements.
+
+*   **Endpoint:** `POST /veteran/questionnaire/submit`
+*   **Headers:** `Authorization: Bearer <token>` (Role: Veteran)
+*   **Request Body:**
+    ```json
+    {
+      "answers": {
+        "serviceBranch": "Army",
+        "yearsOfService": 5,
+        "hasDisability": true,
+        "disabilityType": ["Tinnitus", "Hearing Loss"]
+      }
+    }
+    ```
+*   **Response (200 OK):**
+    ```json
+    {
+      "id": "submission_uuid",
+      "status": "completed",
+      "entitlementResult": {
+        "eligibleBenefits": ["Disability Pension", "Health Care Card"],
+        "estimatedRating": "30%"
+      }
+    }
+    ```
+
+---
+
+## 8. Data Models (TypeScript Interfaces)
+
+For reference, here are the exact interfaces the frontend expects.

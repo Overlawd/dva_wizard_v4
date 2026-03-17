@@ -1,91 +1,83 @@
 import { useState } from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Shield, User, Briefcase } from 'lucide-react';
-import { User as UserType } from '../types/auth';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Shield } from 'lucide-react';
+import { login } from '../services/mockApi';
 
 interface LoginProps {
-  onLogin: (user: UserType) => void;
+  onLogin: (user: any) => void;
 }
 
-export function Login({ onLogin }: LoginProps) {
-  const [email, setEmail] = useState('');
+export default function Login({ onLogin }: LoginProps) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = (role: UserType['role']) => {
-    // Mock authentication logic
-    const mockUser: UserType = {
-      id: '1',
-      name: role === 'admin' ? 'System Admin' : role === 'veteran' ? 'John Veteran' : 'Jane Advocate',
-      email: email || `${role}@dva.gov.au`,
-      role: role,
-      serviceNumber: role === 'veteran' ? '12345678' : undefined
-    };
-    onLogin(mockUser);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await login(username, password);
+      onLogin(response.user);
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white border-slate-200 shadow-xl">
-        <CardHeader className="text-center">
-          <div className="mx-auto bg-blue-600 p-3 rounded-full mb-4">
-            <Shield className="h-8 w-8 text-white" />
-          </div>
-          <CardTitle className="text-2xl">DVA Wizard Portal</CardTitle>
-          <CardDescription>Secure access to claims assistance and system management</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              placeholder="user@dva.gov.au" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input 
-              id="password" 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <div className="pt-4 border-t border-slate-100">
-            <p className="text-sm text-slate-500 mb-3 text-center">Quick Login (Demo Mode)</p>
-            <div className="grid grid-cols-1 gap-2">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start border-red-200 hover:bg-red-50 hover:border-red-300"
-                onClick={() => handleLogin('admin')}
-              >
-                <Shield className="mr-2 h-4 w-4 text-red-600" />
-                Login as Admin
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start border-blue-200 hover:bg-blue-50 hover:border-blue-300"
-                onClick={() => handleLogin('veteran')}
-              >
-                <User className="mr-2 h-4 w-4 text-blue-600" />
-                Login as Veteran
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
-                onClick={() => handleLogin('advocate')}
-              >
-                <Briefcase className="mr-2 h-4 w-4 text-emerald-600" />
-                Login as Advocate
-              </Button>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-lg border-slate-200">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-blue-600 p-3 rounded-full">
+              <Shield className="h-8 w-8 text-white" />
             </div>
           </div>
+          <CardTitle className="text-2xl font-bold text-slate-900">DVA Wizard</CardTitle>
+          <CardDescription className="text-slate-600">
+            Enter your credentials to access the portal
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Username</label>
+              <Input
+                type="text"
+                placeholder="veteran or admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Password</label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+            {error && (
+              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-200">
+                {error}
+              </div>
+            )}
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+              {isLoading ? 'Authenticating...' : 'Sign In'}
+            </Button>
+          </form>
+          <p className="text-xs text-center text-slate-500 mt-4">
+            Demo: Use any username/password. Type "admin" for admin access.
+          </p>
         </CardContent>
       </Card>
     </div>

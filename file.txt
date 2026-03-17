@@ -1,10 +1,12 @@
-
-The app will be available at **http://localhost:5173**.
-
----
-
-### Troubleshooting
-
-**Error: "Failed to resolve import..."**
-- Ensure you ran step 2. The project requires specific Radix UI packages to function.
-- Ensure the files in `src/components/ui/` (button, card, input, etc.) exist in your project folder.
+dva-wizard/
+├── docker-compose.yml
+├── init.sql
+├── backend/
+│   ├── package.json
+│   ├── index.js
+│   └── .env
+└── frontend/
+    ├── (All the React files from the previous step)
+    └── src/
+        └── services/
+            └── api.ts  <-- We will create this to replace mockApi.ts

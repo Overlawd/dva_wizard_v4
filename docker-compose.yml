@@ -1,0 +1,95 @@
+services:
+  # ── Ollama Service ────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:0.6.1
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 30s
+      start_period: 60s
+      retries: 5
+    networks:
+      - dva_network
+    restart: unless-stopped
+
+  # ── PostgreSQL with pgvector ──────────────────────────────────────────────
+  db:
+    image: pgvector/pgvector:pg15
+    container_name: dva-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: vets_secure_pw
+      POSTGRES_DB: dva_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dva_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "5432:5432"
+    networks:
+      - dva_network
+    restart: unless-stopped
+
+  # ── Node.js API Backend ───────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dva-api
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgres://postgres:vets_secure_pw@db:5432/dva_db
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - PORT=3001
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    networks:
+      - dva_network
+    restart: unless-stopped
+
+  # ── React Frontend ────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dva-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - api
+    networks:
+      - dva_network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    name: dva-assistant_db_data
+  ollama_data:
+    name: dva-assistant_ollama_data
+
+networks:
+  dva_network:
+    driver: bridge
